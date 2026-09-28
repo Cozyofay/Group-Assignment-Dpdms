@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1 th:text="${title}">Capture incident</h1>
+    <p class="muted">GPS coordinates are required: they are what places this incident on the provincial map.</p>
+
+    <form method="post"
+          th:action="${editing} ? @{'/incidents/' + ${hazard.apiPath} + '/' + ${incidentId} + '/edit'}
+                                : @{'/incidents/' + ${hazard.apiPath}}">
+        <fieldset>
+            <legend>Where and when</legend>
+            <div class="form-grid">
+                <label>Ward
+                    <input name="ward" required th:value="${values['ward']} ?: ${currentUser.ward}">
+                </label>
+                <label>District
+                    <input name="district" required th:value="${values['district']} ?: 'Rushinga'">
+                </label>
+                <label>Province
+                    <input name="province" required th:value="${values['province']} ?: 'Mashonaland Central'">
+                </label>
+                <label>Date and time of occurrence
+                    <input type="datetime-local" name="occurredAt" required
+                           th:value="${values['occurredAt']}">
+                </label>
+                <label>Severity
+                    <select name="severity" required>
+                        <option th:each="s : ${severities}" th:value="${s}" th:text="${s}"
+                                th:selected="${values['severity'] != null and values['severity'].toString() == s.name()}"></option>
+                    </select>
+                </label>
+                <label>Latitude
+                    <input type="number" step="0.000001" name="latitude" required
+                           placeholder="-16.62" th:value="${values['latitude']}">
+                </label>
+                <label>Longitude
+                    <input type="number" step="0.000001" name="longitude" required
+                           placeholder="32.08" th:value="${values['longitude']}">
+                </label>
+            </div>
+            <button type="button" class="link" onclick="useMyLocation()">Use my current location</button>
+        </fieldset>
+
+        <fieldset>
+            <legend th:text="${hazard.label} + ' indicators'">Indicators</legend>
+            <div class="form-grid">
+                <label th:each="field : ${fields}">
+                    <span th:text="${field.label}">Field</span>
+                    <input th:if="${field.type == 'number'}" type="number" th:step="${field.step}"
+                           th:name="${field.name}" th:value="${values[field.name]}" required>
+                    <input th:if="${field.type == 'text'}" type="text"
+                           th:name="${field.name}" th:value="${values[field.name]}" required>
+                    <select th:if="${field.type == 'select'}" th:name="${field.name}" required>
+                        <option th:each="option : ${field.options}" th:value="${option}"
+                                th:text="${option == 'true' ? 'Yes' : (option == 'false' ? 'No' : option)}"
+                                th:selected="${values[field.name] != null and values[field.name].toString() == option}"></option>
+                    </select>
+                    <small class="muted" th:if="${field.help}" th:text="${field.help}"></small>
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit" th:text="${editing} ? 'Save changes' : 'Submit for approval'">Submit</button>
+            <a class="button-link" th:href="@{'/incidents/' + ${hazard.apiPath}}">Cancel</a>
+        </div>
+    </form>
+
+    <script>
+        function useMyLocation() {
+            if (!navigator.geolocation) {
+                alert('This browser cannot provide a location.');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(function (position) {
+                document.querySelector('input[name=latitude]').value = position.coords.latitude.toFixed(6);
+                document.querySelector('input[name=longitude]').value = position.coords.longitude.toFixed(6);
+            }, function () {
+                alert('Could not read your location. Enter the coordinates by hand.');
+            });
+        }
+    </script>
+</section>
+</body>
+</html>

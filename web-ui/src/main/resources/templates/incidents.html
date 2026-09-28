@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1 th:text="${hazard.label} + ' incidents'">Incidents</h1>
+    <p class="muted">You see approved records, plus your own records if you are a recorder,
+        plus every status if you are the supervisor for this hazard.</p>
+
+    <div class="toolbar">
+        <form class="filters" method="get" th:action="@{'/incidents/' + ${hazard.apiPath}}">
+            <label>Status
+                <select name="status">
+                    <option value="">All</option>
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                            th:selected="${s == status}"></option>
+                </select>
+            </label>
+            <label>Ward <input name="ward" th:value="${ward}" placeholder="All wards"></label>
+            <button type="submit">Filter</button>
+        </form>
+        <a class="button" th:if="${currentUser.recorder and currentUser.hazard != null and currentUser.hazard.name() == hazard.name()}"
+           th:href="@{'/incidents/' + ${hazard.apiPath} + '/new'}">+ Capture incident</a>
+    </div>
+
+    <table>
+        <thead>
+        <tr><th>Ref</th><th>Occurred</th><th>Ward</th><th>Severity</th><th>Status</th><th>Reported by</th><th></th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="incident : ${incidents}">
+            <td th:text="'#' + ${incident['id']}">#1</td>
+            <td th:text="${#strings.replace(incident['occurredAt'], 'T', ' ')}">date</td>
+            <td th:text="${incident['ward']}">Ward 1</td>
+            <td><span class="pill" th:classappend="${incident['severity']}" th:text="${incident['severity']}">HIGH</span></td>
+            <td><span class="status" th:classappend="${incident['status']}" th:text="${incident['status']}">PENDING</span></td>
+            <td th:text="${incident['reporterUsername']}">recorder</td>
+            <td><a th:href="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']}}">Open</a></td>
+        </tr>
+        <tr th:if="${incidents.isEmpty()}">
+            <td colspan="7" class="muted">No incidents match this filter</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1 th:text="${title}">Something went wrong</h1>
+    <div class="panel">
+        <p class="status-code" th:text="'HTTP ' + ${status}">HTTP 403</p>
+        <p th:text="${error}">message</p>
+        <p class="muted" th:if="${status == 403}">
+            This is the backend enforcing hazard-level scoping: your account is not authorised for
+            this hazard, ward or action.
+        </p>
+        <a class="button" th:href="@{/}">Back to the dashboard</a>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1>Alert log</h1>
+    <p class="muted">Every email and WhatsApp message the system attempted, with its delivery status.</p>
+
+    <div class="cards">
+        <div class="card"><span class="value" th:text="${stats['total']} ?: 0">0</span><span class="label">Total</span></div>
+        <div class="card"><span class="value" th:text="${stats['sent']} ?: 0">0</span><span class="label">Sent</span></div>
+        <div class="card"><span class="value" th:text="${stats['failed']} ?: 0">0</span><span class="label">Failed</span></div>
+        <div class="card"><span class="value" th:text="${stats['skipped']} ?: 0">0</span><span class="label">Skipped</span></div>
+    </div>
+
+    <form class="filters" method="get" th:action="@{/alerts}">
+        <label>Status
+            <select name="status">
+                <option value="">All</option>
+                <option th:each="s : ${ {'SENT','FAILED','SKIPPED'} }" th:value="${s}" th:text="${s}"
+                        th:selected="${s == status}"></option>
+            </select>
+        </label>
+        <button type="submit">Filter</button>
+    </form>
+
+    <table>
+        <thead>
+        <tr><th>Sent at</th><th>Hazard</th><th>Incident</th><th>Ward</th><th>Channel</th>
+            <th>Recipient</th><th>Status</th><th>Reason / error</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="alert : ${alerts}">
+            <td th:text="${#strings.replace(alert['sentAt'], 'T', ' ')}"></td>
+            <td th:text="${alert['hazard']}"></td>
+            <td th:text="'#' + ${alert['incidentId']}"></td>
+            <td th:text="${alert['ward']}"></td>
+            <td th:text="${alert['channel']}"></td>
+            <td th:text="${alert['recipientUsername']} + ' (' + (${alert['recipientAddress']} ?: 'no address') + ')'"></td>
+            <td><span class="status" th:classappend="${alert['status']}" th:text="${alert['status']}"></span></td>
+            <td class="muted">
+                <span th:text="${alert['reason']}"></span>
+                <span th:if="${alert['errorMessage']}" th:text="' | ' + ${alert['errorMessage']}"></span>
+            </td>
+        </tr>
+        <tr th:if="${alerts.isEmpty()}"><td colspan="8" class="muted">No alerts recorded yet</td></tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="page(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'DPDMS - ' + ${title}">DPDMS</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <span class="logo">DPDMS</span>
+        <span class="tagline">Rushinga Provincial Disaster Monitoring &amp; Management</span>
+    </div>
+    <div class="who" th:if="${currentUser != null}">
+        <span th:text="${currentUser.fullName}">User</span>
+        <small th:text="${currentUser.roleLabel()}">role</small>
+        <a class="logout" th:href="@{/logout}">Sign out</a>
+    </div>
+</header>
+
+<nav class="mainnav" th:if="${currentUser != null}">
+    <a th:href="@{/}">Dashboard</a>
+    <a th:each="h : ${hazards}" th:href="@{'/incidents/' + ${h.apiPath}}" th:text="${h.label}">Hazard</a>
+    <a th:href="@{/reports}">Reports</a>
+    <a th:href="@{/alerts}">Alerts</a>
+    <a th:if="${currentUser.admin}" th:href="@{/users}">Users</a>
+</nav>
+
+<main>
+    <div class="flash ok" th:if="${message}" th:text="${message}"></div>
+    <div class="flash bad" th:if="${error}" th:text="${error}"></div>
+    <div th:replace="${content}">content</div>
+</main>
+
+<footer>
+    <span>HCS201/HCC201/HAI201 Object Oriented Programming &mdash; University of Zimbabwe</span>
+</footer>
+</body>
+</html>

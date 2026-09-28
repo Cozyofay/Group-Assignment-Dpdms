@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section th:with="canReview=${currentUser.supervisor and currentUser.hazard != null and currentUser.hazard.name() == hazard.name()},
+                  isOwner=${incident != null and currentUser.username == incident['reporterUsername']},
+                  editable=${incident != null and (incident['status'] == 'PENDING' or incident['status'] == 'CORRECTIONS_REQUESTED')}">
+    <h1 th:text="${title}">Incident</h1>
+
+    <div th:if="${incident != null}">
+        <div class="panel">
+            <div class="detail-head">
+                <span class="status" th:classappend="${incident['status']}" th:text="${incident['status']}">PENDING</span>
+                <span class="pill" th:classappend="${incident['severity']}" th:text="${incident['severity']}">HIGH</span>
+            </div>
+            <div class="grid-2">
+                <table>
+                    <tr><th>Ward</th><td th:text="${incident['ward']}"></td></tr>
+                    <tr><th>District</th><td th:text="${incident['district']}"></td></tr>
+                    <tr><th>Province</th><td th:text="${incident['province']}"></td></tr>
+                    <tr><th>Occurred</th><td th:text="${#strings.replace(incident['occurredAt'], 'T', ' ')}"></td></tr>
+                    <tr><th>GPS</th><td th:text="${incident['latitude']} + ', ' + ${incident['longitude']}"></td></tr>
+                    <tr><th>Reported by</th><td th:text="${incident['reporterUsername']}"></td></tr>
+                </table>
+                <table>
+                    <tr th:each="field : ${fields}">
+                        <th th:text="${field.label}">Indicator</th>
+                        <td th:text="${incident[field.name]}">value</td>
+                    </tr>
+                </table>
+            </div>
+            <p th:if="${incident['reviewComment']}" class="review-comment">
+                <strong>Supervisor comment:</strong>
+                <span th:text="${incident['reviewComment']}"></span>
+                <em th:if="${incident['reviewedBy']}" th:text="' - ' + ${incident['reviewedBy']}"></em>
+            </p>
+        </div>
+
+        <div class="panel" th:if="${canReview and incident['status'] == 'PENDING'}">
+            <h2>Approval decision</h2>
+            <form method="post" class="inline-form"
+                  th:action="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']} + '/approve'}">
+                <button type="submit" class="ok">Approve</button>
+            </form>
+            <form method="post" class="inline-form"
+                  th:action="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']} + '/request-corrections'}">
+                <input name="comment" placeholder="What must the recorder correct?" required>
+                <button type="submit">Request corrections</button>
+            </form>
+            <form method="post" class="inline-form"
+                  th:action="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']} + '/reject'}">
+                <input name="comment" placeholder="Reason for rejection" required>
+                <button type="submit" class="danger">Reject</button>
+            </form>
+        </div>
+
+        <div class="panel" th:if="${isOwner and editable}">
+            <h2>Recorder actions</h2>
+            <a class="button" th:href="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']} + '/edit'}">Edit</a>
+            <form method="post" class="inline-form" th:if="${incident['status'] == 'CORRECTIONS_REQUESTED'}"
+                  th:action="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']} + '/resubmit'}">
+                <button type="submit" class="ok">Resubmit for approval</button>
+            </form>
+            <form method="post" class="inline-form"
+                  th:action="@{'/incidents/' + ${hazard.apiPath} + '/' + ${incident['id']} + '/delete'}"
+                  onsubmit="return confirm('Delete this incident?')">
+                <button type="submit" class="danger">Delete</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2>Audit trail</h2>
+            <table>
+                <thead><tr><th>When</th><th>Action</th><th>By</th><th>Status</th><th>Details</th></tr></thead>
+                <tbody>
+                <tr th:each="entry : ${audit}">
+                    <td th:text="${#strings.replace(entry['actedAt'], 'T', ' ')}">when</td>
+                    <td th:text="${entry['action']}">CREATED</td>
+                    <td th:text="${entry['actorUsername']} + ' (' + ${entry['actorRole']} + ')'">who</td>
+                    <td th:text="${entry['fromStatus']} + ' to ' + ${entry['toStatus']}">status</td>
+                    <td class="muted">
+                        <span th:text="${entry['changes']}"></span>
+                        <span th:if="${entry['comment']}" th:text="' | ' + ${entry['comment']}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p><a th:href="@{'/incidents/' + ${hazard.apiPath}}">Back to the list</a></p>
+</section>
+</body>
+</html>

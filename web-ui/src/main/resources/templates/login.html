@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DPDMS - Sign in</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="login-body">
+<div class="login-card">
+    <h1>DPDMS</h1>
+    <p class="sub">Rushinga Provincial Disaster Monitoring and Management System</p>
+
+    <div class="flash bad" th:if="${error}" th:text="${error}"></div>
+
+    <form method="post" th:action="@{/login}">
+        <label for="username">Username</label>
+        <input id="username" name="username" th:value="${username}" required autofocus>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required>
+
+        <button type="submit">Sign in</button>
+    </form>
+
+    <details class="demo">
+        <summary>Demo accounts</summary>
+        <ul>
+            <li><code>admin</code> - provincial administrator</li>
+            <li><code>supervisor.flood</code> ... <code>supervisor.mining</code> - approve one hazard each</li>
+            <li><code>recorder.flood.ward1</code> ... - capture one hazard in one ward</li>
+            <li><code>national</code> - read-only across all hazards</li>
+        </ul>
+        <p>All use the password set in <code>SEED_DEFAULT_PASSWORD</code>.</p>
+    </details>
+</div>
+</body>
+</html>

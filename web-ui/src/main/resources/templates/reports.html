@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1>Reports</h1>
+    <p class="muted">Reports contain approved incidents only, and only the hazards you are authorised to see.</p>
+
+    <form class="panel" method="get" th:action="@{/reports}">
+        <div class="form-grid">
+            <label>Hazards
+                <select name="hazards" multiple size="5">
+                    <option th:each="h : ${hazards}" th:value="${h.name()}" th:text="${h.label}"
+                            th:selected="${selectedHazards.contains(h.name())}"></option>
+                </select>
+                <small class="muted">Leave unselected for all</small>
+            </label>
+            <label>Ward <input name="ward" th:value="${ward}"></label>
+            <label>District <input name="district" th:value="${district}"></label>
+            <label>Severity
+                <select name="severity">
+                    <option value="">All</option>
+                    <option th:each="s : ${severities}" th:value="${s}" th:text="${s}"
+                            th:selected="${s.name() == severity}"></option>
+                </select>
+            </label>
+            <label>From <input type="date" name="from" th:value="${from}"></label>
+            <label>To <input type="date" name="to" th:value="${to}"></label>
+        </div>
+        <div class="actions">
+            <button type="submit" name="preview" value="true">Preview</button>
+        </div>
+    </form>
+
+    <div class="panel">
+        <h2>Download</h2>
+        <p class="muted">The current filters are applied to the file you download.</p>
+        <div class="downloads">
+            <a class="button" th:href="${downloadpdf}">PDF</a>
+            <a class="button" th:href="${downloaddocx}">Word (DOCX)</a>
+            <a class="button" th:href="${downloadxlsx}">Excel (XLSX)</a>
+            <a class="button" th:href="${downloadcsv}">CSV</a>
+        </div>
+    </div>
+
+    <div class="panel" th:if="${incidents != null}">
+        <h2 th:text="'Preview - ' + ${incidents.size()} + ' incident(s)'">Preview</h2>
+        <table>
+            <thead>
+            <tr><th>Hazard</th><th>Ref</th><th>Occurred</th><th>Ward</th><th>Severity</th><th>Summary</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="incident : ${incidents}">
+                <td th:text="${incident['hazard']}"></td>
+                <td th:text="'#' + ${incident['id']}"></td>
+                <td th:text="${#strings.replace(incident['occurredAt'], 'T', ' ')}"></td>
+                <td th:text="${incident['ward']}"></td>
+                <td th:text="${incident['severity']}"></td>
+                <td th:text="${incident['headline']}"></td>
+            </tr>
+            <tr th:if="${incidents.isEmpty()}"><td colspan="6" class="muted">Nothing matches these filters</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>

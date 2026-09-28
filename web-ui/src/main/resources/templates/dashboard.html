@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1>Live dashboard</h1>
+    <p class="muted">Approved incidents only. Pending records never appear here or on the map.</p>
+
+    <form class="filters" method="get" th:action="@{/}">
+        <label>Ward <input name="ward" th:value="${ward}" placeholder="All wards"></label>
+        <label>Severity
+            <select name="severity">
+                <option value="">All</option>
+                <option th:each="s : ${ {'LOW','MODERATE','HIGH','CRITICAL'} }"
+                        th:value="${s}" th:text="${s}" th:selected="${s == severity}"></option>
+            </select>
+        </label>
+        <button type="submit">Apply</button>
+        <a class="button-link" th:href="@{/}">Reset</a>
+    </form>
+
+    <div class="cards">
+        <div class="card big">
+            <span class="value" th:text="${summary['totalIncidents']} ?: 0">0</span>
+            <span class="label">Approved incidents</span>
+        </div>
+        <div class="card" th:each="entry : ${summary['byHazard']}">
+            <span class="value" th:text="${entry.value}">0</span>
+            <span class="label" th:text="${entry.key}">Hazard</span>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="panel">
+            <h2>By severity</h2>
+            <table>
+                <tr th:each="entry : ${summary['bySeverity']}">
+                    <td th:text="${entry.key}">LOW</td>
+                    <td class="num" th:text="${entry.value}">0</td>
+                </tr>
+            </table>
+        </div>
+        <div class="panel">
+            <h2>By ward</h2>
+            <table>
+                <tr th:each="entry : ${summary['byWard']}">
+                    <td th:text="${entry.key}">Ward</td>
+                    <td class="num" th:text="${entry.value}">0</td>
+                </tr>
+                <tr th:if="${summary['byWard'] == null or summary['byWard'].isEmpty()}">
+                    <td class="muted">No approved incidents yet</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Incident map</h2>
+        <p class="muted">Every approved incident is plotted from the GPS coordinates captured at ward level.
+            Click a marker for the details.</p>
+        <div id="map" class="map"></div>
+        <p id="map-fallback" class="muted"></p>
+    </div>
+
+    <div class="panel">
+        <h2>Trend (last 12 months)</h2>
+        <table>
+            <thead><tr><th>Month</th><th class="num">Incidents</th><th>Breakdown</th></tr></thead>
+            <tbody>
+            <tr th:each="point : ${summary['trend']}">
+                <td th:text="${point['period']}">2026-03</td>
+                <td class="num" th:text="${point['total']}">0</td>
+                <td class="muted" th:text="${point['byHazard']}"></td>
+            </tr>
+            <tr th:if="${summary['trend'] == null or summary['trend'].isEmpty()}">
+                <td colspan="3" class="muted">No data for this period</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h2>Recent incidents</h2>
+        <table>
+            <thead>
+            <tr><th>Hazard</th><th>Ref</th><th>Occurred</th><th>Ward</th><th>Severity</th><th>Summary</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="incident : ${summary['recent']}">
+                <td th:text="${incident['hazard']}">FLOOD</td>
+                <td th:text="'#' + ${incident['id']}">#1</td>
+                <td th:text="${#strings.replace(incident['occurredAt'], 'T', ' ')}">date</td>
+                <td th:text="${incident['ward']}">Ward</td>
+                <td><span class="pill" th:classappend="${incident['severity']}" th:text="${incident['severity']}">HIGH</span></td>
+                <td th:text="${incident['headline']}">summary</td>
+            </tr>
+            <tr th:if="${summary['recent'] == null or summary['recent'].isEmpty()}">
+                <td colspan="6" class="muted">Nothing approved yet</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script th:src="@{/js/map.js}"></script>
+    <script th:inline="javascript">
+        window.DPDMS_MAP_URL = /*[[@{/map-data}]]*/ '/map-data';
+        window.DPDMS_MAP_QUERY = /*[[${(ward != null ? '?ward=' + ward : '')}]]*/ '';
+    </script>
+</section>
+</body>
+</html>

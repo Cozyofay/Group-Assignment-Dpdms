@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::section})}">
+<body>
+<section>
+    <h1>Users</h1>
+    <p class="muted">A recorder must be given one hazard and one ward. A supervisor must be given one hazard.
+        The auth-service rejects any other combination.</p>
+
+    <div class="panel">
+        <h2>Add a user</h2>
+        <form method="post" th:action="@{/users}">
+            <div class="form-grid">
+                <label>Username <input name="username" required></label>
+                <label>Password <input name="password" type="password" required
+                                       placeholder="8+ chars, letters and digits"></label>
+                <label>Full name <input name="fullName" required></label>
+                <label>Email <input name="email" type="email"></label>
+                <label>WhatsApp number <input name="phoneNumber" placeholder="+263771234567"></label>
+                <label>Role
+                    <select name="role" required>
+                        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                    </select>
+                </label>
+                <label>Hazard
+                    <select name="hazard">
+                        <option value="">None (admin / national)</option>
+                        <option th:each="h : ${hazardOptions}" th:value="${h}" th:text="${h.label}"></option>
+                    </select>
+                </label>
+                <label>Ward <input name="ward" placeholder="Recorders only"></label>
+            </div>
+            <div class="actions"><button type="submit">Create user</button></div>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+        <tr><th>Username</th><th>Name</th><th>Role</th><th>Hazard</th><th>Ward</th><th>Email</th>
+            <th>WhatsApp</th><th>Active</th><th></th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${users}">
+            <td th:text="${u['username']}"></td>
+            <td th:text="${u['fullName']}"></td>
+            <td th:text="${u['role']}"></td>
+            <td th:text="${u['hazard']} ?: '-'"></td>
+            <td th:text="${u['ward']} ?: '-'"></td>
+            <td th:text="${u['email']} ?: '-'"></td>
+            <td th:text="${u['phoneNumber']} ?: '-'"></td>
+            <td th:text="${u['enabled']} ? 'Yes' : 'No'"></td>
+            <td>
+                <form method="post" th:action="@{'/users/' + ${u['id']} + '/delete'}"
+                      onsubmit="return confirm('Delete this user?')">
+                    <button type="submit" class="danger small">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>
