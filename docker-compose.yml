@@ -1,0 +1,37 @@
+# Supporting infrastructure for local development.
+#   docker compose up -d                          -> RabbitMQ + Mailpit (use your locally installed MySQL)
+#   docker compose --profile with-mysql up -d     -> also starts MySQL in Docker
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: dpdms-rabbitmq
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # management UI  (guest / guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: dpdms-mailpit
+    ports:
+      - "1025:1025"     # SMTP the alert-service sends to
+      - "8025:8025"     # web inbox to view sent alert emails
+
+  mysql:
+    image: mysql:8.0
+    container_name: dpdms-mysql
+    profiles: ["with-mysql"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - dpdms-mysql:/var/lib/mysql
+      - ./infrastructure/mysql:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  dpdms-mysql:
