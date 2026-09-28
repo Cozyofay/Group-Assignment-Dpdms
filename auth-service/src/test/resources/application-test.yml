@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:authdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+dpdms:
+  security:
+    jwt-secret: test-secret-that-is-definitely-longer-than-32-bytes
+    internal-api-key: test-internal-key
+  seed:
+    default-password: Test12345
