@@ -1,0 +1,32 @@
+server:
+  port: ${DISCOVERY_PORT:8761}
+
+spring:
+  application:
+    name: discovery-service
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false   # the registry does not register with itself
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+    enable-self-preservation: false   # development: drop dead instances quickly
+    eviction-interval-timer-in-ms: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:}]"
